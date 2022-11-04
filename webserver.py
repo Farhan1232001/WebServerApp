@@ -9,6 +9,7 @@
 #       
 #           docRoot holds all html files for the website
 #           portNumber must be >1024 for this project
+#       ex) $ python3 webserver.py docroot 1025
 #       
 
 import sys
@@ -88,23 +89,21 @@ while True:
             connectionSocket.send(data.encode())
             f.close()
             connectionSocket.close()
-            # HTTP 404 is a std response code indicating the browser was able to communicate with server
-            # but was not able to find what was requested
-            connectionSocket.send("HTTP/1.0 404 Not Found\n".encode())
-            connectionSocket.send("Content-type: text/html\n\n".encode())
-            connectionSocket.send("<h1> File Not Found </h1>".encode())
-            connectionSocket.close()
-        else:
+        else: 
+            # If an unsupported format is request 
+            # (say if .gif was sent & this webServer doesn't support it) then send 501 error
             connectionSocket.send("HTTP/1.0 501 Not Implemented\n".encode())
             connectionSocket.send("Content-type: text/html\n\n".encode())
             connectionSocket.send("<h1> Unimplemented request type </h1>".encode())
             connectionSocket.close()
     except IOError:
+        # HTTP 404 is a std response code indicating the browser was able to communicate with server
+        # but was not able to find what was requested
         print("404 NOT found")
         # Send response message for file not found
-        connectionSocket.send('HTTP/1.1 404 Not Found\r\n\r\n'.encode())
-        connectionSocket.send("<html><head></head><body><h1>404 Not Found</h1></body></html>\r\n".encode())
-        # Close client socket
+        connectionSocket.send("HTTP/1.0 404 Not Found\n".encode())
+        connectionSocket.send("Content-type: text/html\n\n".encode())
+        connectionSocket.send("<h1> File Not Found </h1>".encode())
         connectionSocket.close()
 
 serverSocket.close()
