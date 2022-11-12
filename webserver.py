@@ -23,22 +23,27 @@ def processPostRequest(connectionSocket):
 # If a GET request with user input is received, a CGI program will run
 def processGetRequest(pathToWebObj):
     pass
-# If a GET request requests a program to run
-def processCgiRequest(pathToCgiProgram):
+# If a GET request requests a program to run, create bidirectional pipes between
+# web server (this program) and the CGI program.
+def processCgiRequest(requestMsgDecodedAndSplit):
     # here is some data
+    REQUEST_METHOD = requestMsgDecodedAndSplit[0]
+    SCRIPT_NAME = requestMsgDecodedAndSplit[1]
+    DOCUMENT_ROOT = "docroot/"
+    QUERY_STRING = ""
     data = "Hi there, this is a test of pipes"
 
     # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
     (parentInput,childOutput) = os.pipe()    # Create a pipe from child to parent
     (childInput,parentOutput) = os.pipe()    # Create a pipe from parent to child
 
-    # Run 'wc' on the data above
-    pid = os.fork()
+    # Run 'HelloWorld.py' on the data above
+    pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process
     if pid != 0:
         # I'm the parent
         os.close(childOutput)
         os.close(childInput)
-        os.write(parentOutput, data)
+        os.write(parentOutput, data.encode())
         os.close(parentOutput)
         response = os.read(parentInput, 1000)
         print(f"py: {response}")
@@ -49,9 +54,12 @@ def processCgiRequest(pathToCgiProgram):
         os.close(parentInput)
         os.dup2(childInput, 0)
         os.dup2(childOutput, 1)
-        e = {}                  # Enviornment variables
-        e["FOO"] = "BAR"
-        os.execve("/usr/bin/wc", ["wc"], e)     # run 'wc'
+        enviornmentVariables = {}
+        enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
+        enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
+        enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
+        enviornmentVariables["QUERY_STRING"] = QUERY_STRING
+        os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)     # run 'HelloWorld.py'
 
 def main():
     # check the command line arguments for validity.
@@ -72,6 +80,8 @@ def main():
     #           use:        serverSocket.bind(("", port))
     localHost = "127.0.0.1"
     port = int( sys.argv[2] )
+    isCgiRequest = False
+    isWebObjectRequest = False
 
     # Open up a socket
     serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -95,46 +105,57 @@ def main():
             requestMsgDecodedAndSplit = requestMsg.split()
                     # note: String.split() converts a string into a list of strings (delimiter being ' ')
                     #       Bytes.split() converts a byte string into a list of byte strings
-            method = requestMsgDecodedAndSplit[0]
-            print("\requestMsgDecodedAndSplit: ", requestMsgDecodedAndSplit)
+            method = requestMsgDecodedAndSplit[0].decode()
+            #print("\requestMsgDecodedAndSplit: ", requestMsgDecodedAndSplit)
                     # recall 1st info inside HTTP request msg is the method
-            urlToWebObj = requestMsgDecodedAndSplit[1]
-                    # recall 2nd info inside HTTP request msg is the url for the WebPage object
+            url = requestMsgDecodedAndSplit[1].decode()
+                    # recall 2nd info inside HTTP request msg is the url for the WebPage object or to a script
                     #       webpage object ==> url to .html files, images, etc
                     #       url can also contain user input
 
-            if method.decode() == "GET":
-                # Form the full filename path (full path is relative to WebServerApp directory)
-                fullPathToWebObj = docroot + urlToWebObj.decode()
-                print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
+            if method == "GET":
+                #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
+                #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
+                #print("urlToWebObj[:7]: ",urlToWebObj[:7])
 
-                # Try opening the file
-                f = open(fullPathToWebObj)
-                connectionSocket.send("HTTP/1.0 200 OK\n".encode())
-
-                # Figure out the content type
-                if (fullPathToWebObj[-5:] == ".html"):
-                    connectionSocket.send("Content-type: text/html\n".encode())
-                elif (fullPathToWebObj[-4:] == ".gif"):
-                    connectionSocket.send("Content-type: image/gif\n".encode())
-                elif (fullPathToWebObj[-4:] == ".jpg"):
-                    connectionSocket.send("Content-type: image/jpg\n".encode())
-                elif (fullPathToWebObj[-5:] == ".jpeg"):
-                    connectionSocket.send("Content-type: image/jpeg\n".encode())
-                elif (urlToWebObj[0:3] == "/url"): # IF Get request contains user input
-                    pass
-                elif (urlToWebObj[:7] == "/cgi-bin"): # IF Get request cgi request
-                    processCgiRequest(urlToWebObj)
+                # Is request for a web object or CGI access (What is MIME type? Does url imply webObject or py script?)
+                if url[-3:] == ".py":    
+                    isCgiRequest = True
                 else:
-                    connectionSocket.send("Content-length: text/plain\n".encode())
+                    isWebObjectRequest = True
 
-                # Read the file & send it
-                data = f.read()
-                connectionSocket.send(f"Content-length: {len(data)}\n".encode())
-                connectionSocket.send("\n".encode())
-                connectionSocket.send(data.encode())
-                f.close()
-                connectionSocket.close()
+                # If url wants web object, then try 
+                # opening the file, sending the content type, and senting the file
+                if isWebObjectRequest:
+                    print("url: ", url)
+                    f = open("docroot"+url)
+                    connectionSocket.send("HTTP/1.0 200 OK\n".encode())
+                    # Figure out the content type
+                    if (url[-5:] == ".html"):
+                        connectionSocket.send("Content-type: text/html\n".encode())
+                    elif (url[-4:] == ".gif"):
+                        connectionSocket.send("Content-type: image/gif\n".encode())
+                    elif (url[-4:] == ".jpg"):
+                        connectionSocket.send("Content-type: image/jpg\n".encode())
+                    elif (url[-5:] == ".jpeg"):
+                        connectionSocket.send("Content-type: image/jpeg\n".encode())
+                    else:
+                        connectionSocket.send("Content-length: text/plain\n".encode())
+
+                    # Read the opend file & send its contents
+                    data = f.read()
+                    connectionSocket.send(f"Content-length: {len(data)}\n".encode())
+                    connectionSocket.send("\n".encode())
+                    connectionSocket.send(data.encode())
+                    f.close()
+                    connectionSocket.close()
+                elif isCgiRequest:
+                    print("url222: ", url)
+                    connectionSocket.send("HTTP/1.0 200 OK\n".encode())
+                    # Figure out the content type
+                    print(requestMsgDecodedAndSplit)
+                    processCgiRequest(requestMsgDecodedAndSplit)
+
             elif method == "POST":
                 pass
             else: 
