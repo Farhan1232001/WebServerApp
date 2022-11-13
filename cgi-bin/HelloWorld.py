@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # Importing the 'cgi' module
+# https://www.geeksforgeeks.org/cgi-programming-python/
 import cgi
-
 
 print("Content-type: text/html\n")
 print("")
