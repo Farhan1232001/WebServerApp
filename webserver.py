@@ -23,8 +23,10 @@ def processPostRequest(connectionSocket):
 # If a GET request with user input is received, a CGI program will run
 def processGetRequest(pathToWebObj):
     pass
+
 # If a GET request requests a program to run, create bidirectional pipes between
-# web server (this program) and the CGI program.
+# the web server (this program) and the CGI program.
+# The method will return a response
 def processCgiRequest(requestMsgDecodedAndSplit):
     # here is some data
     REQUEST_METHOD = requestMsgDecodedAndSplit[0]
@@ -48,6 +50,7 @@ def processCgiRequest(requestMsgDecodedAndSplit):
         response = os.read(parentInput, 1000)
         print(f"py: {response}")
         os.waitpid(pid, 0)  # wait for child to exit
+        return response
     else:
         # I'm the child
         os.close(parentOutput)
@@ -127,7 +130,7 @@ def main():
                 # If url wants web object, then try 
                 # opening the file, sending the content type, and senting the file
                 if isWebObjectRequest:
-                    print("url: ", url)
+                    print("url (WebObjectRequest): ", url)
                     f = open("docroot"+url)
                     connectionSocket.send("HTTP/1.0 200 OK\n".encode())
                     # Figure out the content type
@@ -150,11 +153,16 @@ def main():
                     f.close()
                     connectionSocket.close()
                 elif isCgiRequest:
-                    print("url222: ", url)
+                    print("url (cgiRequest): ", url)
                     connectionSocket.send("HTTP/1.0 200 OK\n".encode())
                     # Figure out the content type
-                    print(requestMsgDecodedAndSplit)
-                    processCgiRequest(requestMsgDecodedAndSplit)
+                    #print(requestMsgDecodedAndSplit)
+
+                    # Response holds info for next webPage, as well as user input info
+                    response = processCgiRequest(requestMsgDecodedAndSplit)
+                    print("response:\n",response)
+                    connectionSocket.send(response)
+                    connectionSocket.close()
 
             elif method == "POST":
                 pass
