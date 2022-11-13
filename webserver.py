@@ -83,8 +83,6 @@ def main():
     #           use:        serverSocket.bind(("", port))
     localHost = "127.0.0.1"
     port = int( sys.argv[2] )
-    isCgiRequest = False
-    isWebObjectRequest = False
 
     # Open up a socket
     serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -100,6 +98,9 @@ def main():
         # Blocks until somebody comes knocking, socket created on return
         connectionSocket, addr = serverSocket.accept()
         print(f"Connection from {addr} ")
+
+        isCgiRequest = False
+        isWebObjectRequest = False
 
         # Get msg retrieved
         try:
@@ -127,6 +128,8 @@ def main():
                 else:
                     isWebObjectRequest = True
 
+                print(isCgiRequest)
+                print(isWebObjectRequest)
                 # If url wants web object, then try 
                 # opening the file, sending the content type, and senting the file
                 if isWebObjectRequest:
