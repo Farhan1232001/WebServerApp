@@ -14,6 +14,7 @@
 
 import sys
 import os
+from multiprocessing import Process, Pipe
 import string
 from socket import *
 
@@ -23,6 +24,7 @@ def processPostRequest(connectionSocket):
 # If a GET request with user input is received, a CGI program will run
 def processGetRequest(pathToWebObj):
     pass
+
 
 # If a GET request requests a program to run, create bidirectional pipes between
 # the web server (this program) and the CGI program.
@@ -62,7 +64,49 @@ def processCgiRequest(requestMsgDecodedAndSplit):
         enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
         enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
         enviornmentVariables["QUERY_STRING"] = QUERY_STRING
-        os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)     # run 'HelloWorld.py'
+        os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME.decode()], enviornmentVariables)     # run 'HelloWorld.py'
+
+# This method is identical to the method above except that it uses threading instead of forking.
+# Reason for having this is because Windows OS does not support forking.
+# this method uses Pipe from multiprocessing module NOT OS module
+#   https://superfastpython.com/multiprocessing-pipe-in-python/#What_is_a_Pipe
+def processCgiRequest_usingThreading_parentProcess(requestMsgDecodedAndSplit):
+    # here is some data
+    print("ee: \n\n",requestMsgDecodedAndSplit)
+    REQUEST_METHOD = requestMsgDecodedAndSplit[0]
+    SCRIPT_NAME = requestMsgDecodedAndSplit[1]
+    DOCUMENT_ROOT = "docroot/"
+    QUERY_STRING = ""
+    data = "Hi there, this is a test of pipes"
+
+    # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
+    parentConnection, childConnection = Pipe()
+    childProcess = Process(target=processCgiRequest_usingThreading_childProcess, args=(childConnection,parentConnection,REQUEST_METHOD,SCRIPT_NAME,DOCUMENT_ROOT,QUERY_STRING))
+    childProcess.daemon = True # makes it so where childProcess ends immediately when parentProcess ends
+    childProcess.start()
+    response = parentConnection.recv()
+    childProcess.join()
+    childProcess.close()
+    parentConnection.close()
+    print(response)
+    print("aklsfjakljfk")
+    return response
+
+def processCgiRequest_usingThreading_childProcess(childConnection,parentConnection,REQUEST_METHOD,SCRIPT_NAME,DOCUMENT_ROOT,QUERY_STRING):
+        enviornmentVariables = {}
+        enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
+        enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
+        enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
+        enviornmentVariables["QUERY_STRING"] = QUERY_STRING
+        os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)
+        #childConnection.send(response)
+        #
+        # enviornmentVariables = {}
+        # enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
+        # enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
+        # enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
+        # enviornmentVariables["QUERY_STRING"] = QUERY_STRING
+        # os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)     # run 'HelloWorld.py' 
 
 def main():
     # check the command line arguments for validity.
@@ -128,8 +172,6 @@ def main():
                 else:
                     isWebObjectRequest = True
 
-                print(isCgiRequest)
-                print(isWebObjectRequest)
                 # If url wants web object, then try 
                 # opening the file, sending the content type, and senting the file
                 if isWebObjectRequest:
@@ -162,7 +204,10 @@ def main():
                     #print(requestMsgDecodedAndSplit)
 
                     # Response holds info for next webPage, as well as user input info
+                    #   response = processCgiRequest(requestMsgDecodedAndSplit)
+                    print("adsadsf")
                     response = processCgiRequest(requestMsgDecodedAndSplit)
+                    print("Before")
                     print("response:\n",response)
                     connectionSocket.send(response)
                     connectionSocket.close()
