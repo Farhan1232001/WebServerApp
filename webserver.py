@@ -56,20 +56,21 @@ def processCgiQueryRequest(requestMsgDecodedAndSplit):
     print("pid (processCgiQueryRequest): ", pid)
     if pid != 0:
         # I'm the parent
-        os.close(childOutput)
         os.close(childInput)
-        os.write(parentOutput, QUERY_STRING.encode())
         os.close(parentOutput)
-        response = os.read(parentInput, 2000)
+        os.write(childOutput, QUERY_STRING.encode())
+        os.close(childOutput)
+        response = os.read(parentInput, 1000)
         print(f"py: {response.decode()}")
-        os.waitpid(pid, 1)  # wait for child to exit
+        os.close(parentInput)
+        os.waitpid(pid, 0)  # wait for child to exit
         return response
     else:
         # I'm the child
         os.close(parentOutput)
-        os.close(parentInput)
-        os.dup2(childInput, 0)
-        os.dup2(childOutput, 1)
+        #os.close(parentInput)
+        #os.dup2(childInput, 0)
+        #os.dup2(childOutput, 1)
         enviornmentVariables = {}
         enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
         enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
@@ -264,6 +265,14 @@ def main():
                     #       webpage object ==> url to .html files, images, etc
                     #       url can also contain user input
 
+            # Creating print statments to log diagnostic information
+            print("\n**************************************************************")
+            print("Diagnostic messages:\n\tHTTP request type: "+method) # Print the type of HTTP request
+            print("\tRequested document: "+url) # Prints the requested document name
+            address = requestMsgDecodedAndSplit[4].decode() # creates a new variable that holds the address of the incoming connection.
+            print("\tAddress of the incoming connection: "+address) # prints the address of the incoming connectoin.
+            print("**************************************************************\n")
+            
             if method == "GET":
                 #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)

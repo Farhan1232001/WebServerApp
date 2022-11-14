@@ -50,12 +50,12 @@
 <div style="background-color:rgb(227, 217, 217)">
 <h1 style="color:white;text-align:center">Query price of item using GET Method (to test CGI Functionality)</h1>
 <p><u>Items in stock are:</u> eggs, milk, bread</p>
-<form action="/queryItem.py" method="GET">
+<form action="queryItem.py" method="GET">
 	<label>
 		Please enter item name:
 		<input type="text" name="item_name" minlength="3" maxlength="20" required>
 	</label>
-	<button type="submit">Submit</button>
+	<input type="submit" value="Submit"/>
 	<p><u>Price: </u></p>
 	<output action="action"></output>
 </form>
