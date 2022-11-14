@@ -162,6 +162,7 @@ def main():
                     #       url can also contain user input
 
             if method == "GET":
+                print("The url is:" + url)
                 #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
                 #print("urlToWebObj[:7]: ",urlToWebObj[:7])
@@ -213,7 +214,7 @@ def main():
                     connectionSocket.close()
 
             elif method == "POST":
-                                #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
+                #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
                 #print("urlToWebObj[:7]: ",urlToWebObj[:7])
 
