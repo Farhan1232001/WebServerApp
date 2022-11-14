@@ -11,13 +11,14 @@
 #           portNumber must be >1024 for this project
 #       ex) $ python3 webserver.py docroot 1025
 #       
-#!/usr/bin/python
+#!C:\Users\Harshit Rao\AppData\Local\Programs\Python\Python311\python.exe
 import sys
 import os
 from multiprocessing import Process, Pipe
 import string
 from socket import *
 import cgi, cgitb
+import subprocess
 #cgitb.enable()
                 
 
@@ -217,29 +218,11 @@ def main():
                     connectionSocket.close()
 
             elif method == "POST":
-                print("Post method was selected")
-                form = cgi.FieldStorage()
-
-                #print("cgi dir" + cgi.print_directory())
-                product_name = form.getvalue('product_name')
-                product_quantity = form.getvalue('product_quantity')
-                shipping_method = form.getvalue('shipping_method')
-            
-                print ("Content-type:text/html\r\n\r\n")
-                print ("<html>")
-                print ("<head>")
-                print ("<title>Hello - Second CGI Program</title>")
-                print ("</head>")
-                print ("<body>")
-                print("<h1> Shopping data received from client</h1>")
-                print("Product Name: %s" %(product_name))
-                print("</br>")
-                print("Product Quantity: %s" %(product_quantity))
-                print("</br>")
-                print("Shipping Method: %s" %(shipping_method))
-                print("</br>")
-                print ("</body>")
-                print("</html>")
+                cmd = 'python /cgi-bin/web.py'
+                p = subprocess.Popen(cmd,shell=True)
+                out,err = p.communicate()
+                print(err)
+                print(out)
                 # #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 # #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
                 # #print("urlToWebObj[:7]: ",urlToWebObj[:7])

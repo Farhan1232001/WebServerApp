@@ -1,0 +1,22 @@
+#!C:\Users\Harshit Rao\AppData\Local\Programs\Python\Python311\python.exe
+import cgi,cgitb
+form = cgi.FieldStorage()
+product_name = form.getvalue('product_name')
+product_quantity = form.getvalue('product_quantity')
+shipping_method = form.getvalue('shipping_method')
+
+print ("Content-type:text/html\r\n\r\n")
+print ("<html>")
+print ("<head>")
+print ("<title>Hello - Second CGI Program</title>")
+print ("</head>")
+print ("<body>")
+print("<h1> Shopping data received from client</h1>")
+print("Product Name: %s" %(product_name))
+print("</br>")
+print("Product Quantity: %s" %(product_quantity))
+print("</br>")
+print("Shipping Method: %s" %(shipping_method))
+print("</br>")
+print ("</body>")
+print("</html>")
