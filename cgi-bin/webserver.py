@@ -11,14 +11,14 @@
 #           portNumber must be >1024 for this project
 #       ex) $ python3 webserver.py docroot 1025
 #       
-
+#!/usr/bin/python
 import sys
 import os
 from multiprocessing import Process, Pipe
 import string
 from socket import *
 import cgi, cgitb
-#cgitb.enable()
+                
 
 def processPostRequest(connectionSocket):
     pass
@@ -35,7 +35,7 @@ def processCgiRequest(requestMsgDecodedAndSplit):
     # here is some data
     REQUEST_METHOD = requestMsgDecodedAndSplit[0]
     SCRIPT_NAME = requestMsgDecodedAndSplit[1]
-    DOCUMENT_ROOT = "docroot/"
+    DOCUMENT_ROOT = "../docroot/"
     QUERY_STRING = ""
     data = "Hi there, this is a test of pipes"
 
@@ -179,7 +179,7 @@ def main():
                 # opening the file, sending the content type, and senting the file
                 if isWebObjectRequest:
                     print("url (WebObjectRequest): ", url)
-                    f = open("docroot"+url)
+                    f = open("../ShoppingCart.html")
                     connectionSocket.send("HTTP/1.0 200 OK\n".encode())
                     # Figure out the content type
                     if (url[-5:] == ".html"):
@@ -217,19 +217,19 @@ def main():
 
             elif method == "POST":
                 print("Post method was selected")
-                
                 form = cgi.FieldStorage()
+
                 #print("cgi dir" + cgi.print_directory())
                 product_name = form.getvalue('product_name')
                 product_quantity = form.getvalue('product_quantity')
                 shipping_method = form.getvalue('shipping_method')
-                
-                print("Content-type: text/html \r\n\r\n")
-                print("<html>")
-                print("<head")
-                print("<title> Post CGI Test</title>")
-                print("</head>")
-                print("<body>")
+            
+                print ("Content-type:text/html\r\n\r\n")
+                print ("<html>")
+                print ("<head>")
+                print ("<title>Hello - Second CGI Program</title>")
+                print ("</head>")
+                print ("<body>")
                 print("<h1> Shopping data received from client</h1>")
                 print("Product Name: %s" %(product_name))
                 print("</br>")
@@ -237,7 +237,7 @@ def main():
                 print("</br>")
                 print("Shipping Method: %s" %(shipping_method))
                 print("</br>")
-                print("</body>")
+                print ("</body>")
                 print("</html>")
                 # #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 # #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
