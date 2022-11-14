@@ -14,6 +14,7 @@
 
 import sys
 import os
+import imageio.v3 as iio
 from multiprocessing import Process, Pipe
 import string
 from socket import *
@@ -25,7 +26,57 @@ def processPostRequest(connectionSocket):
 def processGetRequest(pathToWebObj):
     pass
 
+# Takes in a url like "/queryItem.py?item_name=eggs" and returns "queryItem.py"
+def getScriptName(url):
+    questionMarkIndex = url.find("?")
+    return url[1:questionMarkIndex]
+# Takes in a url like "/queryItem.py?item_name=eggs" and returns "?item_name=eggs"
+def getQueryString(url):
+    questionMarkIndex = url.find("?")
+    return url[questionMarkIndex:]
+# If a GET request WITH query goes through this cgi method run a program by creating bidirectional pipes between
+# the web server (this program) and the CGI program.
+# The method will process query and return response to main() then back to client
+def processCgiQueryRequest(requestMsgDecodedAndSplit):
+    # here is some data
+    REQUEST_METHOD = requestMsgDecodedAndSplit[0].decode()
+    url = requestMsgDecodedAndSplit[1].decode()
+    DOCUMENT_ROOT = "docroot/"
+    QUERY_STRING = getQueryString(url)
+    data = "Hi there, this is a test of pipes"
+    SCRIPT_NAME = getScriptName(url)
+    print("SCRIPT_NAME:  ", SCRIPT_NAME)
 
+    # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
+    (parentInput,childOutput) = os.pipe()    # Create a pipe from child to parent
+    (childInput,parentOutput) = os.pipe()    # Create a pipe from parent to child
+
+    # Run 'HelloWorld.py' on the data above
+    pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process
+    print("pid (processCgiQueryRequest): ", pid)
+    if pid != 0:
+        # I'm the parent
+        os.close(childOutput)
+        os.close(childInput)
+        os.write(parentOutput, QUERY_STRING.encode())
+        os.close(parentOutput)
+        response = os.read(parentInput, 2000)
+        print(f"py: {response.decode()}")
+        os.waitpid(pid, 1)  # wait for child to exit
+        return response
+    else:
+        # I'm the child
+        os.close(parentOutput)
+        os.close(parentInput)
+        os.dup2(childInput, 0)
+        os.dup2(childOutput, 1)
+        enviornmentVariables = {}
+        enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
+        enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
+        enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
+        enviornmentVariables["QUERY_STRING"] = QUERY_STRING
+        print("cgi-bin/"+SCRIPT_NAME)
+        os.execve("cgi-bin/"+SCRIPT_NAME, [SCRIPT_NAME], enviornmentVariables)   
 # If a GET request requests a program to run, create bidirectional pipes between
 # the web server (this program) and the CGI program.
 # The method will return a response
@@ -43,6 +94,7 @@ def processCgiRequest(requestMsgDecodedAndSplit):
 
     # Run 'HelloWorld.py' on the data above
     pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process
+    print("pid (processCgiRequest): ", pid)
     if pid != 0:
         # I'm the parent
         os.close(childOutput)
@@ -65,6 +117,48 @@ def processCgiRequest(requestMsgDecodedAndSplit):
         enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
         enviornmentVariables["QUERY_STRING"] = QUERY_STRING
         os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME.decode()], enviornmentVariables)     # run 'HelloWorld.py'
+
+# If a GET request requests a program to run, create bidirectional pipes between
+# the web server (this program) and the CGI program.
+# The method will return a response
+def processCgiRequestForWebObject(requestMsgDecodedAndSplit):
+    # here is some data
+    REQUEST_METHOD = requestMsgDecodedAndSplit[0]
+    SCRIPT_NAME = requestMsgDecodedAndSplit[1]
+    DOCUMENT_ROOT = "docroot/"
+    QUERY_STRING = ""
+    data = "Hi there, this is a test of pipes"
+
+    # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
+    (parentInput,childOutput) = os.pipe()    # Create a pipe from child to parent
+    (childInput,parentOutput) = os.pipe()    # Create a pipe from parent to child
+
+    # Run 'HelloWorld.py' on the data above
+    pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process
+    print("pid (processCgiRequestForWebObject): ", pid)
+    if pid != 0:
+        # I'm the parent
+        os.close(childOutput)
+        os.close(childInput)
+        os.write(parentOutput, data.encode())
+        os.close(parentOutput)
+        response = os.read(parentInput, 1000)
+        #print(f"py: {response}")
+        os.waitpid(pid, 0)  # wait for child to exit
+        return response
+    else:
+        # I'm the child
+        os.close(parentOutput)
+        os.close(parentInput)
+        os.dup2(childInput, 0)
+        os.dup2(childOutput, 1)
+        enviornmentVariables = {}
+        enviornmentVariables["REQUEST_METHOD"] = REQUEST_METHOD
+        enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
+        enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
+        enviornmentVariables["QUERY_STRING"] = QUERY_STRING
+        os.execve("docroot/"+SCRIPT_NAME.decode(), [SCRIPT_NAME.decode()], enviornmentVariables)  
+
 
 # This method is identical to the method above except that it uses threading instead of forking.
 # Reason for having this is because Windows OS does not support forking.
@@ -106,7 +200,13 @@ def processCgiRequest_usingThreading_childProcess(childConnection,parentConnecti
         # enviornmentVariables["SCRIPT_NAME"] = SCRIPT_NAME
         # enviornmentVariables["DOCUMENT_ROOT"] = DOCUMENT_ROOT
         # enviornmentVariables["QUERY_STRING"] = QUERY_STRING
-        # os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)     # run 'HelloWorld.py' 
+        # os.execve("cgi-bin/"+SCRIPT_NAME.decode(), [SCRIPT_NAME], enviornmentVariables)     # run 'HelloWorld.py'
+
+def isGetQuery(url):
+    if url.find("?") >= 0:
+        return True
+    else:
+        return False
 
 def main():
     # check the command line arguments for validity.
@@ -143,8 +243,11 @@ def main():
         connectionSocket, addr = serverSocket.accept()
         print(f"Connection from {addr} ")
 
+        isCgiQueryRequest = False
         isCgiRequest = False
-        isWebObjectRequest = False
+        isWebObjectRequest = False  # png, jpeg, etc
+        isHtmlFile = False
+        isImgFile = False
 
         # Get msg retrieved
         try:
@@ -167,10 +270,19 @@ def main():
                 #print("urlToWebObj[:7]: ",urlToWebObj[:7])
 
                 # Is request for a web object or CGI access (What is MIME type? Does url imply webObject or py script?)
-                if url[-3:] == ".py":    
+                if isGetQuery(url):     # When url looks somethin like this: /queryItem.py?item_name=eggs
+                    isCgiQueryRequest = True
+                elif url[-3:] == ".py":    # When url looks somethin like this: /HelloWorld.py
                     isCgiRequest = True
-                else:
+                else:                   # When url looks somethin like this: /photo.png
                     isWebObjectRequest = True
+
+                if url[-5:] == ".html":    # When url looks somethin like this: /HelloWorld.py
+                    isHtmlFile = True
+                else:
+                    isImgFile = True
+
+                print(isCgiQueryRequest,isCgiRequest,isWebObjectRequest)
 
                 # If url wants web object, then try 
                 # opening the file, sending the content type, and senting the file
@@ -181,22 +293,46 @@ def main():
                     # Figure out the content type
                     if (url[-5:] == ".html"):
                         connectionSocket.send("Content-type: text/html\n".encode())
+                    elif (url[-4:] == ".htm"):
+                        connectionSocket.send("Content-type: text/htm\n".encode())
                     elif (url[-4:] == ".gif"):
                         connectionSocket.send("Content-type: image/gif\n".encode())
                     elif (url[-4:] == ".jpg"):
                         connectionSocket.send("Content-type: image/jpg\n".encode())
                     elif (url[-5:] == ".jpeg"):
                         connectionSocket.send("Content-type: image/jpeg\n".encode())
+                    elif (url[-4:] == ".png"):
+                        connectionSocket.send("Content-type: image/png\n".encode())
                     else:
                         connectionSocket.send("Content-length: text/plain\n".encode())
 
-                    # Read the opend file & send its contents
-                    data = f.read()
-                    connectionSocket.send(f"Content-length: {len(data)}\n".encode())
-                    connectionSocket.send("\n".encode())
-                    connectionSocket.send(data.encode())
-                    f.close()
-                    connectionSocket.close()
+                    # Read the opened file & send its contents
+                    if isHtmlFile:
+                        data = f.read()
+                        connectionSocket.send(f"Content-length: {len(data)}\n".encode())
+                        connectionSocket.send("\n".encode())
+                        connectionSocket.send(data.encode())
+                        f.close()
+                        connectionSocket.close()
+                    elif isImgFile:
+                        encodedImg = "imgNotFound"
+                        print("docroot"+url)
+                        img = iio.imread("docroot"+url)
+                        if url[-3:] == "png":
+                            encodedImg = iio.imwrite("<bytes>", img, extension=".png")
+                        elif url[-4:] == "jpeg":
+                            encodedImg = iio.imwrite("<bytes>", img, extension=".jpeg")
+                        elif url[-3:] == "jpg":
+                            encodedImg = iio.imwrite("<bytes>", img, extension=".jpeg")
+                        elif url[-3:] == "gif":
+                            encodedImg = iio.imwrite("<bytes>", img, extension=".gif")
+                    
+                        connectionSocket.send(f"Content-length: {len(encodedImg)}\n".encode())
+                        connectionSocket.send("\n".encode())
+                        connectionSocket.send(encodedImg)
+                        f.close()
+                        connectionSocket.close()
+                        
                 elif isCgiRequest:
                     print("url (cgiRequest): ", url)
                     connectionSocket.send("HTTP/1.0 200 OK\n".encode())
@@ -206,8 +342,18 @@ def main():
                     # Response holds info for next webPage, as well as user input info
                     #   response = processCgiRequest(requestMsgDecodedAndSplit)
                     print("adsadsf")
+                    print("requestMsgDecodedAndSplit\n")
+                    print(requestMsgDecodedAndSplit)
                     response = processCgiRequest(requestMsgDecodedAndSplit)
                     print("Before")
+                    print("response:\n",response)
+                    connectionSocket.send(response)
+                    connectionSocket.close()
+                elif isCgiQueryRequest:
+                    print("url (isCgiQueryRequest): ", url)
+                    connectionSocket.send("HTTP/1.0 200 OK\n".encode())
+                    # Figure out the content type
+                    response = processCgiQueryRequest(requestMsgDecodedAndSplit)
                     print("response:\n",response)
                     connectionSocket.send(response)
                     connectionSocket.close()
