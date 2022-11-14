@@ -5,4 +5,17 @@ The purpose of this project is to learn about the server side of the web by impl
 
 The following tutorial is followed (NOTE: we only did part 1)
 - Part I: https://www.classes.cs.uchicago.edu/archive/1999/winter/CS219/projects/project2/project2.html
-- Part II: https://www.classes.cs.uchicago.edu/archive/1999/winter/CS219/projects/project2/project2b.html
+
+Simple Python web-server
+  How to connect to webserver from browser?
+      Insert following URL in browser to connect to server
+          http://127.0.0.1:1025/ShoppingCart.html
+
+  How to run program?
+      In general,
+          $ python3 webserver.py <relativePathToDocRoot> <portNumberr>
+          
+          docRoot holds all html files for the website
+          portNumber must be >1024 for this project
+      ex) $ python3 webserver.py docroot 1025
+ 
