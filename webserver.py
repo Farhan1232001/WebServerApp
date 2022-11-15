@@ -161,6 +161,14 @@ def main():
                     #       webpage object ==> url to .html files, images, etc
                     #       url can also contain user input
 
+            # Creating print statments to log diagnostic information
+            print("\n**************************************************************")
+            print("Diagnostic messages:\n\tHTTP request type: "+method) # Print the type of HTTP request
+            print("\tRequested document: "+url) # Prints the requested document name
+            address = requestMsgDecodedAndSplit[4].decode() # creates a new variable that holds the address of the incoming connection.
+            print("\tAddress of the incoming connection: "+address) # prints the address of the incoming connectoin.
+            print("**************************************************************\n")
+
             if method == "GET":
                 #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
                 #print("requestMsgDecodedAndSplit: ",requestMsgDecodedAndSplit)
