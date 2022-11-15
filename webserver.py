@@ -39,6 +39,13 @@ def getQueryString(url):
 # If a GET request WITH query goes through this cgi method run a program by creating bidirectional pipes between
 # the web server (this program) and the CGI program.
 # The method will process query and return response to main() then back to client
+#
+# Methods to understand
+#   os.read() - Read at most n bytes from file descriptor fd.
+#               Return a bytestring containing the bytes read. If the end of the file 
+#               referred to by fd has been reached, an empty bytes object is returned.
+#   os.write() - Write the bytestring in str to file descriptor fd.
+#              - Return the number of bytes actually written.
 def processCgiQueryRequest(requestMsgDecodedAndSplit):
     # here is some data
     REQUEST_METHOD = requestMsgDecodedAndSplit[0].decode()
@@ -50,8 +57,10 @@ def processCgiQueryRequest(requestMsgDecodedAndSplit):
     print("SCRIPT_NAME:  ", SCRIPT_NAME)
 
     # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
-    (parentInput,childOutput) = os.pipe()    # Create a pipe from child to parent
-    (childInput,parentOutput) = os.pipe()    # Create a pipe from parent to child
+    #   pipe() - Create a pipe. 
+    #          - Return a pair of file descriptors (r, w) usable for reading and writing, respectively. 
+    parentInput,childOutput = os.pipe()    # Create a pipe from child to parent
+    childInput,parentOutput = os.pipe()    # Create a pipe from parent to child
 
     # Run 'HelloWorld.py' on the data above
     pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process
@@ -92,8 +101,8 @@ def processCgiRequest(requestMsgDecodedAndSplit):
     data = "Hi there, this is a test of pipes"
 
     # Create a Two Pipes - one connecting webserver.py to cgi-bin/HelloWorld.py and vice versa
-    (parentInput,childOutput) = os.pipe()    # Create a pipe from child to parent
-    (childInput,parentOutput) = os.pipe()    # Create a pipe from parent to child
+    parentInput,childOutput = os.pipe()    # Create a pipe from child to parent
+    childInput,parentOutput = os.pipe()    # Create a pipe from parent to child
 
     # Run 'HelloWorld.py' on the data above
     pid = os.fork() # Create a child process. Method returns 0 in the child process and the pid in parent process

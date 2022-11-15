@@ -1,64 +1,52 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
 	<meta charset="UTF-8">
 	<title>ShoppingCart</title>
 </head>
-
-
 <body>
+	<h1 style="color:black;text-align:center">SHOPPING CART DEMO</h1>
+	<p style="color:black;text-align:center">Web page to test simple web-server that handles a web page with shopping
+		cart functionality<br /></p>
+	<hr />
 
-
-<h1 style="color:black;text-align:center">SHOPPING CART DEMO</h1>
-<p style="color:black;text-align:center">Web page to test simple web-server that handles a web page with shopping cart functionality<br/></p>
-
-
-<hr/>
 	<!--Image of a cart-->
+	<div style="background-color:rgb(227, 217, 217)">
 
-<div style="background-color:rgb(227, 217, 217)">
-
-<h1 style="color:white;text-align:center">Image of a shopping cart (PNG)</h1>
-<img src="shoppingCartPNG.png" width="400" height="300" />
-
-</div>
-<hr/>
+		<h1 style="color:white;text-align:center">Image of a shopping cart (PNG)</h1>
+		<img src="shoppingCartPNG.png" width="400" height="300" />
+	</div>
+	<hr />
 
 	<!--Image of a random gif-->
-
-<div style="background-color:green">
-
-<h1 style="color:white;text-align:center">Some random GIF</h1>
-
-<a href="https://www.google.com"target="_blank">
-<img src="randomGif.gif"/>
-</a>
+	<div style="background-color:green">
+		<h1 style="color:white;text-align:center">Some random GIF</h1>
+		<a href="https://www.google.com" target="_blank">
+			<img src="randomGifCompressed.gif" />
+		</a>
 
 	<!--Image of a random JPEG-->
-
-<div style="background-color:rgb(108, 134, 108)">
-
-<h1 style="color:white;text-align:center">Retreiving a Jpeg with GET Method</h1>
-
-<a href="https://www.google.com"target="_blank">
-<img src="shoppingCart.jpeg" width="250"/>
-</a>
+	<div style="background-color:rgb(108, 134, 108)">
+		<h1 style="color:white;text-align:center">Retreiving a Jpeg with GET Method</h1>
+		<a href="https://www.google.com" target="_blank">
+			<img src="shoppingCart.jpeg" width="250" />
+		</a>
 
 	<!--Prompt user for info... with GET method-->
-<div style="background-color:rgb(227, 217, 217)">
-<h1 style="color:white;text-align:center">Query price of item using GET Method (to test CGI Functionality)</h1>
-<p><u>Items in stock are:</u> eggs, milk, bread</p>
-<form action="queryItem.py" method="GET">
-	<label>
-		Please enter item name:
-		<input type="text" name="item_name" minlength="3" maxlength="20" required>
-	</label>
-	<input type="submit" value="Submit"/>
-	<p><u>Price: </u></p>
-	<output action="action"></output>
-</form>
+	<div style="background-color:rgb(227, 217, 217)">
+		<h1 style="color:white;text-align:center">Query price of item using GET Method (to test CGI
+			Functionality)</h1>
+		<p><u>Items in stock are:</u> eggs, milk, bread</p>
+		<form action="queryItem.py" method="GET">
+			<label>
+				Please enter item name:
+				<input type="text" name="item_name" minlength="3" maxlength="20" required>
+			</label>
+			<input type="submit" value="Submit" />
+			<p><u>Price: </u></p>
+			<output action="action"></output>
+		</form>
 
 	<!--Testing POST method-->
 	<!--Prompt user for info... with POST method-->
@@ -75,19 +63,18 @@
 			</select></br>
 			<button type="submit">Submit</button>
 			</form>
-	</div>
-	
-
-	<!--Run a Python program-->
-<div style="background-color:green">
-<h1 style="color:white;text-align:center">Run a Python program using GET Method w/ query string(to test CGI functionality)</h1>
-<p><a href="HelloWorld.py">Run HelloWorld Python Script</a></p>
+		</div>
 
 
-<p>End of web page</p>
-</div>
+		<!--Run a Python program-->
+		<div style="background-color:green">
+			<h1 style="color:white;text-align:center">Run a Python program using GET Method w/ query string(to
+				test CGI functionality)</h1>
+			<p><a href="HelloWorld.py">Run HelloWorld Python Script</a></p>
 
+
+			<p>End of web page</p>
+		</div>
 
 </body>
-
 </html>
