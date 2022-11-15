@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+
+
+<head>
+<title>ShoppingCart</title>
+</head>
+
+
+<body>
+
+
+<h1 style="color:black;text-align:center">SHOPPING CART DEMO</h1>
+<p style="color:black;text-align:center">Web page to test simple web-server that handles a web page with shopping cart functionality<br/></p>
+
+
+<hr/>
+	<!--Image of a cart-->
+
+<div style="background-color:rgb(227, 217, 217)">
+
+<h1 style="color:white;text-align:center">Image of a shopping cart (PNG)</h1>
+<img src="https://www.publicdomainpictures.net/pictures/400000/velka/image-16184009141SS.png" width="400" height="300" />
+
+</div>
+<hr/>
+
+	<!--Image of a random gif-->
+
+<div style="background-color:green">
+
+<h1 style="color:white;text-align:center">Some random GIF</h1>
+
+<a href="https://www.google.com"target="_blank">
+<img src="https://media.tenor.com/9vRAkntogEMAAAAd/background.gif"/>
+</a>
+
+	<!--Prompt user for info... with GET method-->
+<div style="background-color:rgb(227, 217, 217)">
+<h1 style="color:white;text-align:center">Enter Username and Password using GET Method</h1>
+<form action="/url" method="GET">
+	<label>
+		Please enter your username
+		<input type="text" name="username" minlength="3" maxlength="20" required>
+	</label>
+	<button type="submit">Submit</button>  
+</form>
+
+	<!--Testing POST method-->
+	<!--Prompt user for info... with POST method-->
+	<div style="background-color:rgb(0, 137, 164)">
+		<h1 style="color:rgb(0, 0, 0);text-align:center">Enter Username and Password using POST Method</h1>
+		<form action="/cgi-bin/webserver.py" method="POST" target="_blank">
+			Prodct Name: <input type="text" name = "product_name"/></br>
+			Product Quantity <input type="radio" name = "product_quantity" value="1"/> 1 
+			<input type="radio" name = "product_quantity" value="10"/> 10 
+			<input type="radio" name = "product_quantity" value="100"/> 100 </br>
+			Shipping Method <select name = "shipping_method">
+				<option value= "SameDay" selected>Same Day</option>
+				<option value="OneDay">One Day</option>
+			</select></br>
+			<button type="submit">Submit</button>
+			</form>
+	</div>
+	
+
+	<!--Run a Python program-->
+<div style="background-color:green">
+<h1 style="color:white;text-align:center">Run a Python program (to test CGI functionality)</h1>
+<p><a href="HelloWorld.py">Run HelloWorld Python Script</a></p>
+
+
+<p>End of web page</p>
+</div>
+
+
+</body>
+
+</html>

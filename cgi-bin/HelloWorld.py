@@ -2,6 +2,7 @@
 # Importing the 'cgi' module
 # https://www.geeksforgeeks.org/cgi-programming-python/
 import cgi
+import sys
 
 print("Content-type: text/html\n")
 print("")
@@ -27,4 +28,4 @@ print("<input type='submit' value='Submit' />")
 print("</form>")
 print("</body></html>")
 
-
+sys.exit(0)
