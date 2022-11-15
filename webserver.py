@@ -274,7 +274,7 @@ def main():
             address = requestMsgDecodedAndSplit[4].decode() # creates a new variable that holds the address of the incoming connection.
             print("\tAddress of the incoming connection: "+address) # prints the address of the incoming connectoin.
             print("**************************************************************\n")
-            
+
             if method == "GET":
                 print("The url is:" + url)
                 #print(f"\tdocroot: {docroot} \n\turlToWebObj: {urlToWebObj}\n\tfullPathToWebObj: {fullPathToWebObj}")
