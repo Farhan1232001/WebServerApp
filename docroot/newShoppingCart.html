@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="shoppingCart.css">
+		<title>Shopping Cart</title>
+	</head>
+
+	<body>
+		<header class="header">
+			<div class="middle-section">
+				<h1 style="margin-bottom: 0px;">CS3800 Shopping Cart</h1>
+			</div>
+			<div>
+				<p>Web page to test simple web-server that handles a web page with shopping cart functionality</p>
+			</div>
+		</header>
+
+		<main>
+			<section class="cart-grid">
+				<!--Prompt user for info... with GET method-->
+				<div>
+					<h2>Query price of item using GET Method (to test CGI Functionality)</h2>
+					<p><u>Items in stock are:</u> eggs, milk, bread</p>
+					<form action="queryItem.py" method="GET">
+						<label>
+							Please enter item name:
+							<input type="text" name="item_name" minlength="3" maxlength="20" required>
+						</label>
+						<input type="submit" value="Submit"/>
+						<p><u>Price: </u></p>
+						<output action="action"></output>
+					</form>
+				</div>
+
+				<!--Testing POST method-->
+				<!--Prompt user for info... with POST method-->
+				<div>
+					<h1 style="color:rgb(0, 0, 0);text-align:center">Enter Product name, Product quantity and Shipping method</h1>
+					<form action="../../WebServerApp-1/webserver.py" method="POST" target="_blank">
+						Product Name: <input type="text" name = "product_name"/></br>
+						Product Quantity <input type="radio" name = "product_quantity" value="1"/> 1 
+						<input type="radio" name = "product_quantity" value="10"/> 10 
+						<input type="radio" name = "product_quantity" value="100"/> 100 </br>
+						Shipping Method <select name = "shipping_method">
+							<option value= "SameDay" selected>Same Day</option>
+							<option value="OneDay">One Day</option>
+						</select></br>
+						<button type="submit">Submit</button>
+						</form>
+				</div>
+			</section>
+		</main>
+
+	</body>
+</html>
